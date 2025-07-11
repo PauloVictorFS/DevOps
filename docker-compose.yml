@@ -1,0 +1,47 @@
+# docker-compose.yml - 
+
+services:
+  db:
+    image: postgres:13-alpine
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_DB=gces_db
+      - POSTGRES_USER=gces_user
+      - POSTGRES_PASSWORD=gces_password
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U gces_user -d gces_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build: .
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgres://gces_user:gces_password@db:5432/gces_db
+      - SECRET_KEY=minha-chave-secreta-de-desenvolvimento-pode-ser-qualquer-coisa
+      - DEBUG=1
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    build: ./www
+    volumes:
+      - ./www:/app
+      - /app/node_modules
+    ports:
+      - "4000:4000" 
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000/api
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
