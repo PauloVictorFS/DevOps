@@ -27,19 +27,26 @@ services:
       - DATABASE_URL=postgres://gces_user:gces_password@db:5432/gces_db
       - SECRET_KEY=minha-chave-secreta-de-desenvolvimento-pode-ser-qualquer-coisa
       - DEBUG=1
+      - ON_SERVER=False  
+      - SECURE_SSL_REDIRECT=False
+      - SESSION_COOKIE_SECURE=False
+      - CSRF_COOKIE_SECURE=False
     depends_on:
       db:
         condition: service_healthy
 
   frontend:
-    build: ./www
+    build:
+      context: ./www
+      
     volumes:
       - ./www:/app
       - /app/node_modules
     ports:
-      - "4000:4000" 
+      - "4000:4000"
     environment:
-      - NEXT_PUBLIC_API_URL=http://localhost:8000/api
+      - NEXT_PUBLIC_API_HOST=http://localhost:8000
+      - NODE_ENV=development
     depends_on:
       - backend
 
