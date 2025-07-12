@@ -29,8 +29,9 @@ build_backend:
   stage: build
   script:
     - echo "Construindo a imagem do backend..."
-    - docker build -f Dockerfile.backend -t meu-backend-img:ci .
+    - docker build -f Dockerfile -t meu-backend-img:ci .
     - echo "Build do backend concluído."
+
 
 build_frontend:
   stage: build
