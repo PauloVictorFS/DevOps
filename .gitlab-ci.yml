@@ -41,27 +41,21 @@ build_frontend:
 test_backend:
   stage: test
   image: python:3.8
-  # Inicia um serviço Postgres real para este job
   services:
     - name: postgres:15
       alias: postgres
   before_script:
-    
     - apt-get update && apt-get install -y postgresql-client
-    
     - pip install psycopg2-binary
-    
     - grep -v 'psycopg2' requirements.txt > requirements_ci.txt
     - pip install -r requirements_ci.txt
+    - pip install --force-reinstall "PyJWT==1.7.1"
   script:
     - echo "Aguardando o Postgres..."
-   
     - timeout 30 bash -c "until pg_isready -h postgres -p 5432; do sleep 1; done"
     - echo "Postgres pronto. Rodando migrações..."
-   
     - python manage.py migrate
     - echo "Executando testes do backend..."
-
     - python manage.py test api
 
 test_frontend:
