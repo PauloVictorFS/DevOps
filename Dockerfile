@@ -5,7 +5,7 @@ FROM python:3.8-slim
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 ENV IGNORE_DOT_ENV_FILE=True
-# Definir o diretório de trabalho dentro do contêiner.
+# Definir o diretório de trabalho dentro do contêiner(Ajustada pro valor correto).
 WORKDIR /app
 
 # Copiar o arquivo de dependências e instalá-las.
