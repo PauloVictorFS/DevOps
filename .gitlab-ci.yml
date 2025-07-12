@@ -66,3 +66,28 @@ test_frontend:
     - echo "Executando teste simples de Node.js..."
    
     - node tests/home.test.js
+
+
+lint_backend:
+  stage: lint
+  image: python:3.8-slim
+  before_script:
+   
+    - pip install flake8
+  script:
+    - echo "Executando o linter Flake8 no código Python..."
+    
+    - flake8 .
+
+lint_frontend:
+  stage: lint
+  image: node:20-alpine
+  before_script:
+    - cd www
+    - echo "Instalando dependências (incluindo ESLint)..."
+    - npm install
+    
+    - npm install eslint@8
+  script:
+    - echo "Executando o linter ESLint no código do frontend..."
+    - npx eslint .
