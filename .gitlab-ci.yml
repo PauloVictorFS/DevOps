@@ -74,6 +74,8 @@ lintian-backend:
   before_script:
     - pip install --user flake8
     - export PATH=$PATH:/root/.local/bin
+  script:
+    - flake8 .
 
 lintian_frontend:
   stage: lint
@@ -86,4 +88,4 @@ lintian_frontend:
     - npm install eslint@8
   script:
     - echo "Executando o linter ESLint no código do frontend..."
-    - npx eslint .|| true
+    - npx eslint . || true
