@@ -1,3 +1,4 @@
+# .gitlab-ci.yml
 
 stages:
   - build
@@ -8,14 +9,14 @@ variables:
   POSTGRES_DB: gces_db
   POSTGRES_USER: gces_user
   POSTGRES_PASSWORD: gces_password
-  POSTGRES_HOST_AUTH_METHOD: trust 
+  POSTGRES_HOST_AUTH_METHOD: trust
   DATABASE_URL: "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}"
   SECRET_KEY: "uma-chave-secreta-qualquer-para-o-ambiente-de-ci"
 
 # --- ETAPA DE BUILD ---
 build_backend:
   stage: build
-  image: docker:24.0.5 # Usamos uma imagem com Docker
+  image: docker:24.0.5
   services:
     - name: docker:24.0.5-dind
       alias: dockerdaemon
@@ -39,14 +40,14 @@ build_frontend:
 test_backend:
   stage: test
   image: python:3.8-slim
-  # Inicia um serviço de banco de dados SÓ para este job
   services:
     - name: postgres:15
       alias: postgres
   before_script:
-    - apt-get update && apt-get install -y postgresql-client # Instala o cliente do Postgres
+    - apt-get update && apt-get install -y postgresql-client
+    # CORREÇÃO: Instalar o binário ANTES dos outros requisitos
+    - pip install psycopg2-binary
     - pip install -r requirements.txt
-    - pip install psycopg2-binary # Driver do Python para se conectar ao Postgres
   script:
     - echo "Aguardando o Postgres ficar pronto..."
     - timeout 20 bash -c "until pg_isready -h postgres -p 5432; do sleep 1; done"
@@ -59,5 +60,7 @@ test_frontend:
   stage: test
   image: node:20-alpine
   script:
+    # CORREÇÃO: Entrar no diretório do frontend primeiro
+    - cd www
     - echo "Executando teste simples de Node.js para o frontend..."
-    - node www/tests/Home.test.js 
+    - node tests/Home.test.js
