@@ -110,7 +110,7 @@ deploy_backend:
     - docker push "$CI_REGISTRY_IMAGE/backend:latest"
   # REGRA: Este job só roda na branch 'main'
   rules:
-    - if: '$CI_COMMIT_BRANCH == "main"'
+    - if: '$CI_COMMIT_BRANCH == "feature/deploy-continuo"'
 
 deploy_frontend:
   stage: deploy
