@@ -4,7 +4,7 @@
 FROM python:3.8-alpine as builder
 
 
-# Esse comentario é pra forçar atualização do cache (pra testar deploy atualizando)
+# Esse comentario é pra forçar atualização do cache (pra testar deploy atualizado)
 WORKDIR /app
 
 
