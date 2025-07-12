@@ -20,12 +20,14 @@ build_frontend:
   stage: build
   script:
     - docker build -f www/Dockerfile -t meu-frontend-img:ci ./www
-
-test_backend:
+est_backend:
   stage: test
   image: python:3.8-slim
   variables:
     SECRET_KEY: "dummy-secret-key-for-ci"
+    DATABASE_URL: "sqlite:///:memory:"
+    DEBUG: "False"
+    ON_SERVER: "False"
   before_script:
     - apt-get update && apt-get install -y build-essential libpq-dev
     - pip install -r requirements.txt
