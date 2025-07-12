@@ -1,0 +1,32 @@
+# Dockerfile.prod
+
+# --- Estágio 1: Builder ---
+FROM python:3.8-alpine as builder
+
+WORKDIR /app
+
+# Instala dependências do sistema para compilar e usar libpq
+RUN apk add --no-cache gcc musl-dev libpq-dev postgresql-dev
+
+COPY requirements/ ./requirements/
+RUN pip install --prefix=/install -r requirements/server.txt
+
+
+
+# --- Estágio Final ---
+FROM python:3.8-alpine
+
+WORKDIR /app
+
+RUN apk add --no-cache libpq
+
+COPY --from=builder /install /usr/local
+COPY . .
+
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+
+EXPOSE 8000
+RUN SECRET_KEY=dummy-key-for-build DATABASE_URL=sqlite:///:memory: python manage.py collectstatic --noinput
+
+CMD ["gunicorn", "app.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "4"]
