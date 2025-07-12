@@ -3,7 +3,10 @@
 # --- Estágio 1: Builder ---
 FROM python:3.8-alpine as builder
 
+
+# Esse comentario é pra forçar atualização do cache (pra testar deploy atualizando)
 WORKDIR /app
+
 
 # Instala dependências do sistema para compilar e usar libpq
 RUN apk add --no-cache gcc musl-dev libpq-dev postgresql-dev
