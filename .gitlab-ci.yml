@@ -1,19 +1,19 @@
-# .gitlab-ci.yml
-
 stages:
   - build
   - test
   - lint
 
+# Variáveis globais para configurar o serviço do Postgres
 variables:
   POSTGRES_DB: gces_db
   POSTGRES_USER: gces_user
   POSTGRES_PASSWORD: gces_password
   POSTGRES_HOST_AUTH_METHOD: trust
+  # Variáveis para a aplicação Django se conectar ao serviço
   DATABASE_URL: "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}"
   SECRET_KEY: "uma-chave-secreta-qualquer-para-o-ambiente-de-ci"
 
-# --- ETAPA DE BUILD ---
+# --- ETAPA DE BUILD (sem alterações) ---
 build_backend:
   stage: build
   image: docker:24.0.5
@@ -36,31 +36,39 @@ build_frontend:
   script:
     - docker build -f www/Dockerfile -t meu-frontend-img:ci ./www
 
-# --- ETAPA DE TESTE ---
+
+
 test_backend:
   stage: test
-  image: python:3.8-slim
+  image: python:3.8
+  # Inicia um serviço Postgres real para este job
   services:
     - name: postgres:15
       alias: postgres
   before_script:
+    
     - apt-get update && apt-get install -y postgresql-client
-    # CORREÇÃO: Instalar o binário ANTES dos outros requisitos
+    
     - pip install psycopg2-binary
-    - pip install -r requirements.txt
+    
+    - grep -v 'psycopg2' requirements.txt > requirements_ci.txt
+    - pip install -r requirements_ci.txt
   script:
-    - echo "Aguardando o Postgres ficar pronto..."
-    - timeout 20 bash -c "until pg_isready -h postgres -p 5432; do sleep 1; done"
-    - echo "Postgres pronto. Executando migrações..."
+    - echo "Aguardando o Postgres..."
+   
+    - timeout 30 bash -c "until pg_isready -h postgres -p 5432; do sleep 1; done"
+    - echo "Postgres pronto. Rodando migrações..."
+   
     - python manage.py migrate
     - echo "Executando testes do backend..."
+
     - python manage.py test api
 
 test_frontend:
   stage: test
-  image: node:20-alpine
+  image: node:20
   script:
-    # CORREÇÃO: Entrar no diretório do frontend primeiro
     - cd www
-    - echo "Executando teste simples de Node.js para o frontend..."
-    - node tests/Home.test.js
+    - echo "Executando teste simples de Node.js..."
+   
+    - node tests/home.test.js
