@@ -1,0 +1,41 @@
+# .gitlab-ci.yml
+
+# Usamos uma imagem Docker oficial que já vem com as ferramentas do Docker.
+# Isso nos permite executar comandos `docker` dentro do nosso pipeline.
+image: docker:24.0.5
+
+# Para construir imagens Docker dentro de um job de CI, precisamos de um serviço
+# especial chamado "Docker-in-Docker" (dind).
+services:
+  - name: docker:24.0.5-dind
+    alias: dockerdaemon
+
+# Define a ordem em que as etapas (stages) serão executadas.
+stages:
+  - build
+  - test
+  - lint
+
+# Variáveis de ambiente para fazer o cliente Docker se comunicar com o serviço dind.
+variables:
+  DOCKER_HOST: tcp://dockerdaemon:2375
+  DOCKER_TLS_CERTDIR: ""
+  DOCKER_DRIVER: overlay2
+
+# --- ETAPA DE BUILD ---
+# Jobs que verificam se as imagens Docker podem ser construídas com sucesso.
+
+build_backend:
+  stage: build
+  script:
+    - echo "Construindo a imagem do backend..."
+    - docker build -f Dockerfile.backend -t meu-backend-img:ci .
+    - echo "Build do backend concluído."
+
+build_frontend:
+  stage: build
+  script:
+    - echo "Construindo a imagem do frontend..."
+    # O -f aponta para o Dockerfile e o último argumento (./www) é o contexto do build.
+    - docker build -f www/Dockerfile -t meu-frontend-img:ci ./www
+    - echo "Build do frontend concluído."
