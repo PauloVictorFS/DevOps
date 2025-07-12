@@ -1,58 +1,42 @@
-# .gitlab-ci.yml
-
 image: docker:24.0.5
-
 services:
   - name: docker:24.0.5-dind
     alias: dockerdaemon
-
 stages:
   - build
   - test
   - lint
-
 variables:
   DOCKER_HOST: tcp://dockerdaemon:2375
   DOCKER_TLS_CERTDIR: ""
   DOCKER_DRIVER: overlay2
 
-# --- ETAPA DE BUILD ---
 build_backend:
   stage: build
   script:
-    - echo "Construindo a imagem do backend..."
     - docker build -f Dockerfile -t meu-backend-img:ci .
-    - echo "Build do backend concluído."
 
 build_frontend:
   stage: build
   script:
-    - echo "Construindo a imagem do frontend..."
     - docker build -f www/Dockerfile -t meu-frontend-img:ci ./www
-    - echo "Build do frontend concluído."
-
-# --- ETAPA DE TESTE ---
-# Jobs que executam os testes unitários.
 
 test_backend:
   stage: test
-  image: python:3.8-slim  # Usamos uma imagem Python para rodar testes de Python
+  image: python:3.8-slim
+  variables:
+    SECRET_KEY: "dummy-secret-key-for-ci"
   before_script:
-    - echo "Instalando dependências do backend..."
     - apt-get update && apt-get install -y build-essential libpq-dev
     - pip install -r requirements.txt
   script:
-    - echo "Executando testes do backend..."
-    # O Django usará um banco de dados SQLite em memória para os testes
     - python manage.py test api
 
 test_frontend:
   stage: test
-  image: node:20-alpine  # Usamos uma imagem Node.js para rodar testes de JS
+  image: node:20-alpine
   before_script:
-    - echo "Instalando dependências do frontend..."
-    - cd www  # Entra na pasta do frontend
+    - cd www
     - npm install
   script:
-    - echo "Executando testes do frontend..."
     - npm test
